@@ -8,7 +8,10 @@ import arcade
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 600
 SCREEN_TITLE = "Welcome to Arcade"
+
 PLAYER_SCALING = 0.5
+SPRITE_SCALING_PLAYER = 0.2
+
 
 # Classes
 class Welcome(arcade.Window):
@@ -20,44 +23,55 @@ class Welcome(arcade.Window):
 
         # Call the parent class constructor
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+        self.player_list = None
+        self.player_sprite = None
 
         # Set the background window
          # Background image will be stored in this variable
         self.background = None
-        # Set up the player info
-        self.player_sprite = None
-        
-        
-        
-    
+
+    def setup(self):
+        self.player_list = arcade.SpriteList()
+
+
+
+
+        # Set up the player
+        # Character image from kenney.nl
+        self.player_sprite = arcade.Sprite("snail.png",
+                                           SPRITE_SCALING_PLAYER)
+        self.player_sprite.center_x = 45
+        self.player_sprite.center_y = 50
+        self.player_list.append(self.player_sprite)
+
+
+
+
+
+
 
     def on_draw(self):
         """Called whenever you need to draw your window
         """
         self.background = arcade.load_texture("sample.jpeg")
-                
-        
-        self.player_sprite = arcade.Sprite("sample.jpeg", PLAYER_SCALING)
-        self.player_sprite.center_x = 200
-        self.player_sprite.center_y = 200
-        
-
         # Clear the screen and start drawing
         arcade.start_render()
+
         arcade.draw_lrwh_rectangle_textured(0, 0,
                                             SCREEN_WIDTH, SCREEN_HEIGHT,
                                             self.background)
-        
+        self.player_list.draw()
+
 
         # Draw a blue circle
-        for x in range(50,600,50):
+        for x in range(100,600,100):
             arcade.draw_line(0,x,600,x,arcade.color.WHITE_SMOKE,4)
-        for y in range(50,600,50):
+        for y in range(100,600,100):
             arcade.draw_line(y,600,y,0,arcade.color.WHITE_SMOKE,4)
 
-        
 
-# Main code entry point
-if __name__ == "__main__":
-    app = Welcome()
-    arcade.run()
+
+
+app = Welcome()
+app.setup()
+arcade.run()
