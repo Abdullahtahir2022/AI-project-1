@@ -3,6 +3,7 @@
 
 # Imports
 import arcade
+import random
 
 # Constants
 SCREEN_WIDTH = 600
@@ -11,6 +12,7 @@ SCREEN_TITLE = "Welcome to Arcade"
 
 PLAYER_SCALING = 0.5
 SPRITE_SCALING_PLAYER = 0.2
+MOVEMENT_SPEED = 5
 
 
 # Classes
@@ -26,6 +28,7 @@ class Welcome(arcade.Window):
         self.player_list = None
         self.player_sprite = None
 
+
         # Set the background window
          # Background image will be stored in this variable
         self.background = None
@@ -38,13 +41,41 @@ class Welcome(arcade.Window):
 
         # Set up the player
         # Character image from kenney.nl
-        self.player_sprite = arcade.Sprite("snail.png",
-                                           SPRITE_SCALING_PLAYER)
-        self.player_sprite.center_x = 45
-        self.player_sprite.center_y = 50
-        self.player_list.append(self.player_sprite)
+        numberList = [0,100,200,300,500,400]
+        for i in range(5):
+            self.player_sprite = arcade.Sprite("snail.png",
+                                               SPRITE_SCALING_PLAYER)
+            self.player_sprite.center_x = 45+random.choice(numberList)
+            self.player_sprite.center_y = 50+random.choice(numberList)
 
 
+            self.player_list.append(self.player_sprite)
+        for s in range(5):
+            self.player_sprite = arcade.Sprite("snail1.png",
+                                               SPRITE_SCALING_PLAYER)
+            self.player_sprite.center_x = 45+random.choice(numberList)
+            self.player_sprite.center_y = 50+random.choice(numberList)
+
+            self.player_list.append(self.player_sprite)
+
+    '''def on_update(self, delta_time):
+        """ Movement and game logic """
+
+        # Move the player
+        self.player_list.update()
+
+    def on_key_press(self, key, modifiers):
+        """Called whenever a key is pressed. """
+
+        # If the player presses a key, update the speed
+        if key == arcade.key.UP:
+            self.player_sprite.change_y = MOVEMENT_SPEED
+        elif key == arcade.key.DOWN:
+            self.player_sprite.change_y = -MOVEMENT_SPEED
+        elif key == arcade.key.LEFT:
+            self.player_sprite.change_x = -MOVEMENT_SPEED
+        elif key == arcade.key.RIGHT:
+            self.player_sprite.change_x = MOVEMENT_SPEED'''
 
 
 
@@ -61,6 +92,7 @@ class Welcome(arcade.Window):
                                             SCREEN_WIDTH, SCREEN_HEIGHT,
                                             self.background)
         self.player_list.draw()
+
 
 
         # Draw a blue circle
