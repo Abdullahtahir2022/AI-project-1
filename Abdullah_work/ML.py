@@ -34,10 +34,10 @@ class Welcome(arcade.Window):
     def on_draw(self):
         """Called whenever you need to draw your window
         """
-        self.background = arcade.load_texture("c.jpg")
+        self.background = arcade.load_texture("sample.jpeg")
                 
         
-        self.player_sprite = arcade.Sprite("f.jpg", PLAYER_SCALING)
+        self.player_sprite = arcade.Sprite("sample.jpeg", PLAYER_SCALING)
         self.player_sprite.center_x = 200
         self.player_sprite.center_y = 200
         
