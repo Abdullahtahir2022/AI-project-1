@@ -50,29 +50,11 @@ class Welcome(arcade.Window):
         
 
         # Draw a blue circle
-        arcade.draw_line(0,50,600,50,arcade.color.BLUE,4)
-        arcade.draw_line(0,100,600,100,arcade.color.BLUE,4)
-        arcade.draw_line(0,150,600,150,arcade.color.BLUE,4)
-        arcade.draw_line(0,200,600,200,arcade.color.BLUE,4)
-        arcade.draw_line(0,250,600,250,arcade.color.BLUE,4)
-        arcade.draw_line(0,300,600,300,arcade.color.BLUE,4)
-        arcade.draw_line(0,350,600,350,arcade.color.BLUE,4)
-        arcade.draw_line(0,400,600,400,arcade.color.BLUE,4)
-        arcade.draw_line(0,450,600,450,arcade.color.BLUE,4)
-        arcade.draw_line(0,500,600,500,arcade.color.BLUE,4)
-        arcade.draw_line(0,550,600,550,arcade.color.BLUE,4)
-        arcade.draw_line(0,550,600,550,arcade.color.BLUE,4)
-        arcade.draw_line(50,600,50,0,arcade.color.BLUE,4)
-        arcade.draw_line(100,600,100,0,arcade.color.BLUE,4)
-        arcade.draw_line(150,600,150,0,arcade.color.BLUE,4)
-        arcade.draw_line(200,600,200,0,arcade.color.BLUE,4)
-        arcade.draw_line(250,600,250,0,arcade.color.BLUE,4)
-        arcade.draw_line(300,600,300,0,arcade.color.BLUE,4)
-        arcade.draw_line(350,600,350,0,arcade.color.BLUE,4)
-        arcade.draw_line(400,600,400,0,arcade.color.BLUE,4)
-        arcade.draw_line(450,600,450,0,arcade.color.BLUE,4)
-        arcade.draw_line(500,600,500,0,arcade.color.BLUE,4)
-        arcade.draw_line(550,600,550,0,arcade.color.BLUE,4)
+        for x in range(50,600,50):
+            arcade.draw_line(0,x,600,x,arcade.color.WHITE_SMOKE,4)
+        for y in range(50,600,50):
+            arcade.draw_line(y,600,y,0,arcade.color.WHITE_SMOKE,4)
+
         
 
 # Main code entry point
