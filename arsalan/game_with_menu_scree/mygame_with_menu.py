@@ -1,12 +1,29 @@
+"""
+    Group Members : 
+--------------------------
+-    `Saira Amin`        -
+-    `Abdullah Tahir`    -
+-    `Qazi Arsalan Shah` -
+--------------------------
+
+    AI IN ACTION
+
+"""
+
 import arcade
 import os
 import random
+# Main Menu Screen width
 
 MENU_SCREEN_WIDTH = 700
 MENU_SCREEN_HEIGHT = 600
 
+# Sprites scaling
 SPRITE_SCALING = 0.13
 COIN_SCALE = 0.13
+
+# It is start position of sprites
+
 COIN_START_SCALE = 35 # like x= 35 and y = 35 of starting
 
 # i have decided to keep each block of width = 70 and height = 70
@@ -15,17 +32,25 @@ COIN_START_SCALE = 35 # like x= 35 and y = 35 of starting
 # We can go till 10 X 10
 # Grid is made using lines, not actual Grid 
 
+# used for game actual game board
 SCREEN_WIDTH = 700
 SCREEN_HEIGHT = 700
-SCREEN_TITLE = "Sprite Bouncing Coins"
+SCREEN_TITLE = "Snails Game"
+# Each Grid is of 70 width and 70 height
+# Now if sprite is incenter of each grid, and want ot move to next block, i has to has 70 to its 
+# x direction and 70 in y as per required move
+
 GRID_GAP = 70
 
 
+# Here is the class for our first view, Menu screen
 
 class MenuView(arcade.View):
-    def on_show(self):
+    def on_show(self): # when we need to show this view this is called
         arcade.set_background_color(arcade.color.DARK_BLUE)
+
     def on_draw(self):
+        # For drawing something
         arcade.start_render()
         back = arcade.load_texture("b.jpeg")
         arcade.draw_lrwh_rectangle_textured(0, 0, MENU_SCREEN_WIDTH, MENU_SCREEN_HEIGHT,back)
@@ -36,10 +61,14 @@ class MenuView(arcade.View):
                          arcade.color.GRAY, font_size=20, anchor_x="center")
 
     def on_mouse_press(self, _x, _y, _button, _modifiers):
+        # When mouse is pressed, View is changed
         game_view = MyGame()
+        # calling window.show_view() to show that view
         self.window.show_view(game_view)
+        # This setup() is must to be called
         game_view.setup()
 
+# This our main view
 class MyGame(arcade.View):
     
     def __init__(self):
@@ -47,14 +76,16 @@ class MyGame(arcade.View):
         self.background = None
         self.coin_list = None
         self.splash_list = None
-        # self.wall_list = None
+        
     
     def setup(self):
 
         # Sprite lists
         # self.wall_list = arcade.SpriteList()
         # self.coin_list = arcade.SpriteList()
+
         self.background = arcade.load_texture("back.jpg")
+        
         self.coin_list = arcade.SpriteList()
         self.splash_list = arcade.SpriteList()
         
@@ -185,6 +216,11 @@ class MyGame(arcade.View):
         self.coin_list.update()
         self.splash_list.update()
         """ Movement and game logic """
+        # This for loop is doing simple thing,
+        # starting from first grid position x = 35 y = 35 
+        # Changing our snails position , and on each move placing a splash
+        # Moving Horizontally
+
         for x in range(COIN_START_SCALE,SCREEN_WIDTH,GRID_GAP):
             self.coin_list[0].center_x = x
             splash = arcade.Sprite("splash.png" ) 
@@ -197,11 +233,15 @@ class MyGame(arcade.View):
 
 
 def main():
-    """ Main method """
-
+    """ Main method
+        # Window is created and returned in window  
+     """
     window =  arcade.Window(MENU_SCREEN_WIDTH, MENU_SCREEN_HEIGHT ,"Different Views Example")
+    # Creating menu view
     menu_view = MenuView()
+    # Showing that view
     window.show_view(menu_view)
+    # Calling arcade.run()
     arcade.run()
 
 if __name__ == "__main__":
