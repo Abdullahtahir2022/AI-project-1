@@ -2,8 +2,8 @@ import arcade
 import os
 import random
 
-SPRITE_SCALING = 0.13
-COIN_SCALE = 0.13
+SPRITE_SCALING = 0.13 # it for my snails scaling
+COIN_SCALE = 0.13 # sprite scaling
 COIN_START_SCALE = 35 # like x= 35 and y = 35 of starting
 # i have decided to keep each block of width = 70 and height = 70
 # now if user want 3 * 3 board , we will simply do, 3*70 = 210 size 
@@ -104,23 +104,27 @@ class MyGame(arcade.Window):
         # coin.scale = 0.13
         # self.coin_list.append(coin)
 
-    def on_draw(self):
+    def on_draw(self): # this method is called when program things it needs to draw something
         """
         Render the screen.
         """
 
         # This command has to happen before we start drawing
-        arcade.start_render()
+        arcade.start_render() #start rendering
+        # Drawing the background image
         arcade.draw_lrwh_rectangle_textured(0, 0,
                                             SCREEN_WIDTH, SCREEN_HEIGHT,
-                                            self.background)
-        # Drawing Lines
+                                            self.background) 
         
+        # Drawing Lines
+        # X is varying so it mean looping horizontally
         for x in range(0, SCREEN_WIDTH+1, GRID_GAP):
             arcade.draw_line(x, 0, x, SCREEN_HEIGHT, arcade.color.WHITE_SMOKE, 3)
+        # Y is varying sot looping vertically
 
         for x in range(0,SCREEN_HEIGHT+1, GRID_GAP):
             arcade.draw_line(0, x, SCREEN_WIDTH, x, arcade.color.WHITE_SMOKE, 3)
+        # Draw splases and draw snails
         self.splash_list.draw()
         self.coin_list.draw()
         
@@ -134,31 +138,7 @@ class MyGame(arcade.Window):
         
     def on_update(self, delta_time):
         """ Movement and game logic """
-        # self.coin_list[0].left = 0
-        # self.coin_list[0].bottom = 0
-        # self.coin_list.update()
-        # for coin in self.coin_list:
-
-        #     coin.center_x += coin.change_x
-        #     walls_hit = arcade.check_for_collision_with_list(coin, self.wall_list)
-        #     for wall in walls_hit:
-        #         if coin.change_x > 0:
-        #             coin.right = wall.left
-        #         elif coin.change_x < 0:
-        #             coin.left = wall.right
-        #     if len(walls_hit) > 0:
-        #         coin.change_x *= -1
-
-        #     coin.center_y += coin.change_y
-        #     walls_hit = arcade.check_for_collision_with_list(coin, self.wall_list)
-        #     for wall in walls_hit:
-        #         if coin.change_y > 0:
-        #             coin.top = wall.bottom
-        #         elif coin.change_y < 0:
-        #             coin.bottom = wall.top
-        #     if len(walls_hit) > 0:
-        #         coin.change_y *= -1
-
+        # Logic for update
 
 def main():
     """ Main method """
