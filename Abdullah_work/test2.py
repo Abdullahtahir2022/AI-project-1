@@ -41,7 +41,7 @@ class Welcome(arcade.Window):
 
         # Set up the player
         # Character image from kenney.nl
-        numberList = [0,200,400]
+        numberList = [0,200,400,600]
         for i in range(2):
             self.player_sprite = arcade.Sprite("tick.png",
                                                SPRITE_SCALING_PLAYER)
@@ -50,7 +50,7 @@ class Welcome(arcade.Window):
 
 
             self.player_list.append(self.player_sprite)
-        for i in range(2):
+        '''for i in range(2):
             self.player_sprite = arcade.Sprite("cross.png",
                                                SPRITE_SCALING_PLAYER)
             self.player_sprite.center_x = 100+random.choice(numberList)
@@ -58,6 +58,7 @@ class Welcome(arcade.Window):
 
 
             self.player_list.append(self.player_sprite)
+            '''
 
     '''def on_update(self, delta_time):
         """ Movement and game logic """
