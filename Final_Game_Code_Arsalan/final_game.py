@@ -22,6 +22,8 @@ SCREEN_TITLE = "Snails Game"
 # USED AS LOCAL TO MINIMAX (HEURISTIC)
 BOT_POS = [9,9]
 PLAYER_POS = [0,0]
+bot_places = []
+player_places = []
 """
 ======================================================================
 
@@ -122,6 +124,8 @@ class MyGame(arcade.View):
         self.bot_score = 0
         self.bot_position = [9,9]   # Global to game Current location of bot
         self.player_position = [0,0]
+        self.BOT_POS = [9,9]
+        self.PLAYER_POS = [0,0]
 
     # Generate BackEnd Grid
     def initialize_board(self,rows,cols):
@@ -172,13 +176,7 @@ class MyGame(arcade.View):
         self.snail_one = self.make_sprites("snailone.png",SPRITE_SNAIL)
         self.snail_two = self.make_sprites("snailRed.png",SPRITE_SNAIL,True)
         self.turn = 1
-        # print(self.check_possible_actions((9,0)))
-        # print(self.islegalMove(1,(1,2),(2,2)))
-        # sys.exit()
-        # self.allowed_actions(self.player_position)
-        # self.minimax(self.grid,0,5,True)
         
-
     
     # This Function is to make Front end Grid
     def initialize_grid(self):
@@ -440,10 +438,10 @@ class MyGame(arcade.View):
         # It also uses possible_actions function
         # Returns List of possible moves for AI Agent
         if turn == 1:
-            pos = copy.deepcopy(self.player_position)
+            pos = copy.deepcopy(location)
             slime = 10
         else:
-            pos = copy.deepcopy(self.bot_position)
+            pos = copy.deepcopy(location)
             slime = 20
         actions = self.check_possible_actions(list(pos))
         # print(actions)
@@ -462,55 +460,185 @@ class MyGame(arcade.View):
         best_value = -9999
         best_move = [-1,-1]
         # Allowed action return all allowed actions bot slime plus empty
-        zero_blocks,slimed = self.allowed_actions(self.bot_position,copied_board,2)
-        BOT_POS = copy.deepcopy(self.bot_position)
+        zero_blocks,slimed = self.allowed_actions(self.bot_position,copied_board,0)
+        self.BOT_POS = copy.deepcopy(self.bot_position)
         print(zero_blocks)
         # Logic check for all allowed actions
-        if len(zero_blocks) and len(slimed) == 0:
+        if len(zero_blocks) == 0 and len(slimed) == 0:
             print("Blocked Bot No More Moves Left")
+            return list(self.BOT_POS)
         if len(zero_blocks) == 0 and len(slimed) != 0:
-            pass    
+            # Can Move on slime only
+            for slimed_move in slimed:
+                pass
+            return list(self.BOT_POS)
 
-        for move in zero_blocks:
-            copied_board[move[0]][move[1]] = 2
-            copied_board[self.bot_position[0]][self.bot_position[0]] = 20
-            BOT_POS = copy.deepcopy(move)
-            # This BOT_POS will be used by MINIMAX and its subs
-            # value = self.minimax(copied_board,0,8,True)
-            value = 20
-            if value >= best_value :
-                best_value = value
-                best_move[0] = move[0]
-                best_move[1] = move[1]
+        if len(zero_blocks) != 0:
+            
+            for move in zero_blocks:
+                copied_board[move[0]][move[1]] = 2
+                copied_board[self.bot_position[0]][self.bot_position[0]] = 20
+                self.BOT_POS = copy.deepcopy(move)
+                print(f"Moved At {move}")
+                # This BOT_POS will be used by MINIMAX and its subs
+                value = self.minimax(copied_board,0,8,False)
+                print(value)
+                # Undo the move and restore the place
+
+                copied_board[move[0]][move[1]] = 0
+                copied_board[self.bot_position[0]][self.bot_position[1]] = 2
+                self.BOT_POS = copy.deepcopy(self.bot_position)
+                if value >= best_value :
+                    best_value = value
+                    best_move[0] = move[0]
+                    best_move[1] = move[1]
 
         print(best_move,best_value)
         
         return list(best_move)
             
     def heuristic(self,board):
-        return 20
+        wining_chances = 0
+        
+        # Looking for visited by bot
+        for x in range(len(board)):
+            for y in range(len(board[x])):
+                if board[x][y] == 20:
+                    wining_chances += 1
+        # Thz currentPos on simulation board
+        x,y = list(self.BOT_POS)
+        # previous_bot Position
+        pre_x , pre_y = bot_places[-1]
+
+        # Look for central area of bot
+        # if x in range(3,8) and y in range(3,8):
+        #     # Bot in central area 
+        #     wining_chances += 10 
+        # Look for empty boxes in the direction
+        if x == pre_x:
+            if y > pre_y:
+                for i in range(pre_y , 10):
+                    if board[x][i] == 0:
+                        wining_chances += 1
+            elif y < pre_y:
+                for i in reversed(range(y)):
+                    if board[x][i] == 0:
+                        wining_chances += 1
+        elif y == pre_y:
+            if x > pre_x:
+                for i in range(x , 10):
+                    if board[i][y] == 0:
+                        wining_chances += 1
+            elif x < pre_x:
+                for i in reversed(range(x)):
+                    if board[i][y] == 0:
+                        wining_chances += 1
+        return wining_chances
 
     def minimax(self,board,depth,max_depth,is_max):
+        # print(depth)
         result = self.evaluateBoard(board)
-        if result == 100 or result == 200 or result == 50 or depth == 5:
+        if result == 100 or result == 200 or result == 50 or depth == 7:
+            
             # print(result+self.heuristic(board))
             return result + self.heuristic(board)
         if is_max:
+            # Bot turn(0)
             best = -10000
-            actions = self.allowed_actions(BOT_POS,board,2)
+            zero_moves , slimed_moves = self.allowed_actions(self.BOT_POS,board,0)
             
-            
+            if len(zero_moves) == 0 and len(slimed_moves) == 0:
+                print("Blocked Bot No More Moves Left")
+                return -100
+            elif len(zero_moves) == 0 and len(slimed_moves) != 0:
+                # Slimed Moves
+                return 5
+            elif len(zero_moves) != 0:
+                # Zeros left
+                for move in zero_moves:
+                    board[move[0]][move[1]] = 2
+                    board[self.BOT_POS[0]][self.BOT_POS[1]] = 20
+                    bot_places.append(self.BOT_POS)
+                    self.BOT_POS = copy.deepcopy(move)
+                    best = max(best,self.minimax(board,depth+1,8,False))
+                    # Undo the move
+                    board[move[0]][move[1]] = 0
+                    pos = list(bot_places.pop())
+                    self.BOT_POS = copy.deepcopy(pos)
+                    board[pos[0]][pos[1]] = 2
+            return best
+
         else:
             best = 10000
+            # Player turn(1) simulation
+            zero_move, slimed = self.allowed_actions(self.PLAYER_POS,board,1)
+            if len(zero_move) == 0 and len(slimed) == 0:
+                print("Blocked Human No More Moves Left")
+                return 0
+            elif len(zero_move) == 0 and len(slimed) != 0:
+                # Slimed Moves
+                return 0
+            elif len(zero_move) != 0:
+                # Zeros left 
+                for move in zero_move:
+                    board[move[0]][move[1]] = 1
+                    board[self.PLAYER_POS[0]][self.PLAYER_POS[1]] = 10
+                    player_places.append(self.PLAYER_POS)
+                    self.PLAYER_POS = copy.deepcopy(move)
+                    # print(board)
+                    best = min(best,self.minimax(board,depth+1,8,True))
+                    # Undo the move
+                    board[move[0]][move[1]] = 0
+                    pos = list(player_places.pop())
+                    self.PLAYER_POS = copy.deepcopy(pos)
+                    board[pos[0]][pos[1]] = 1
+            return best
+
+
+
+
         print(best)
         sys.exit()
     
     def bot_playing(self):
-        pass
+        self.BOT_POS = copy.deepcopy(self.bot_position)
+        move = list(self.findBestMove())
+        if move == self.bot_position:
+            print("Blocked, No score awarded")
+            self.turn = 1
+        else:
+            print(move)
+            self.bot_score += 1
+            self.grid[move[0]][move[1]] = 2
+            self.grid[self.bot_position[0]][self.bot_position[1]] = 20
+            pre_x = self.bot_position[0]
+            pre_y = self.bot_position[1]
+            self.bot_position = copy.deepcopy(move)
+            self.snail_two.center_x = (MARGIN + WIDTH) * (move[1]) + MARGIN + WIDTH // 2
+            self.snail_two.center_y = (MARGIN + HEIGHT) * (move[0]) + MARGIN + HEIGHT // 2
+            self.snail_two.update()
+            splash = self.create_splashes(pre_x,pre_y,"splashRed.png")
+            self.splash_player_list.append(splash)
+            self.splash_player_list.draw()
+            self.splash_player_list.update()
+            self.turn = 1
+            
+
+        
     # ===================================================================================
     #                       Functions for AI AGENT (SECTION ENDED)
     # ===================================================================================
-
+    def current_position(self,board,is_human):
+        if is_human:
+            for x in range(len(board)):
+                for y in range(len(board[x])):
+                    if board[x][y] == 1:
+                        return [x,y]
+        else:
+            for x in range(len(board)):
+                for y in range(len(board[x])):
+                    if board[x][y] == 2:
+                        return [x,y]
         
     def on_mouse_press(self, x, y, button, modifiers):
         """
@@ -520,6 +648,8 @@ class MyGame(arcade.View):
         if result == 0:
             print("Continue State")
             print(self.grid)
+        else:
+            print(result)
         # Change the x/y screen coordinates to grid coordinates
         column = int(x // (WIDTH + MARGIN))
         row = int(y // (HEIGHT + MARGIN))
@@ -540,6 +670,7 @@ class MyGame(arcade.View):
                     self.grid[new_x][new_y] = 1
                     self.grid[current_x][current_y] = 10
                     self.player_position = [new_x,new_y]
+                    self.PLAYER_POS = copy.deepcopy(self.player_position)
                     print("New x y")
                     print(self.player_position)
                     self.player_score += 1
@@ -556,31 +687,31 @@ class MyGame(arcade.View):
                 else:
                     print("No score awarded")
                     self.turn = 0 #bot turn given
+                self.bot_playing()
+            # elif self.turn == 0:
+            #     # Checking for the legal move
+            #     current_y = self.snail_two.center_x // (MARGIN + WIDTH)
+            #     current_x = self.snail_two.center_y // (MARGIN + HEIGHT)
+            #     print(current_x,current_y)
+            #     result , new_x,new_y = self.islegalMove(self.turn,tuple((current_x,current_y)),tuple((row,column)))
+            #     if result:
+            #         print("PLayer 2 result true")
+            #         print(new_x,new_y)
+            #         self.grid[new_x][new_y] = 2
+            #         self.grid[current_x][current_y] = 20
+            #         self.bot_score += 1
+            #         self.snail_two.center_x = (MARGIN + WIDTH) * (new_y) + MARGIN + WIDTH // 2
+            #         self.snail_two.center_y = (MARGIN + HEIGHT) * (new_x) + MARGIN + HEIGHT // 2
+            #         self.snail_two.update()
+            #         splash = self.create_splashes(current_x,current_y,"splashRed.png")
+            #         self.splash_player_list.append(splash)
+            #         self.splash_player_list.draw()
+            #         self.splash_player_list.update()
+            #         self.turn = 1 #player turn given
 
-            elif self.turn == 0:
-                # Checking for the legal move
-                current_y = self.snail_two.center_x // (MARGIN + WIDTH)
-                current_x = self.snail_two.center_y // (MARGIN + HEIGHT)
-                print(current_x,current_y)
-                result , new_x,new_y = self.islegalMove(self.turn,tuple((current_x,current_y)),tuple((row,column)))
-                if result:
-                    print("PLayer 2 result true")
-                    print(new_x,new_y)
-                    self.grid[new_x][new_y] = 2
-                    self.grid[current_x][current_y] = 20
-                    self.bot_score += 1
-                    self.snail_two.center_x = (MARGIN + WIDTH) * (new_y) + MARGIN + WIDTH // 2
-                    self.snail_two.center_y = (MARGIN + HEIGHT) * (new_x) + MARGIN + HEIGHT // 2
-                    self.snail_two.update()
-                    splash = self.create_splashes(current_x,current_y,"splashRed.png")
-                    self.splash_player_list.append(splash)
-                    self.splash_player_list.draw()
-                    self.splash_player_list.update()
-                    self.turn = 1 #player turn given
-
-                else:
-                    print("Foul Move Bot, No score awarded")
-                    self.turn = 1 #player turn given   
+            #     else:
+            #         print("Foul Move Bot, No score awarded")
+            #         self.turn = 1 #player turn given   
                 
             # if self.turn == 1:
             #     # player turn
