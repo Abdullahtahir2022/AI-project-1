@@ -176,7 +176,6 @@ class MyGame(arcade.View):
         self.snail_one = self.make_sprites("snailone.png",SPRITE_SNAIL)
         self.snail_two = self.make_sprites("snailRed.png",SPRITE_SNAIL,True)
         self.turn = 1
-        
     
     # This Function is to make Front end Grid
     def initialize_grid(self):
@@ -460,18 +459,33 @@ class MyGame(arcade.View):
         best_value = -9999
         best_move = [-1,-1]
         # Allowed action return all allowed actions bot slime plus empty
+        print(copied_board)
+        print("girf")
+        print(self.grid)
+        print("-----------------")
         zero_blocks,slimed = self.allowed_actions(self.bot_position,copied_board,0)
         self.BOT_POS = copy.deepcopy(self.bot_position)
+        self.BOT_POS[0] = self.bot_position[0]
+        self.BOT_POS[1] = self.bot_position[1]
         print(zero_blocks)
+        print(slimed)
         # Logic check for all allowed actions
         if len(zero_blocks) == 0 and len(slimed) == 0:
             print("Blocked Bot No More Moves Left")
-            return list(self.BOT_POS)
+            return list(self.BOT_POS),False
         if len(zero_blocks) == 0 and len(slimed) != 0:
             # Can Move on slime only
+            print("In slimed")  
             for slimed_move in slimed:
-                pass
-            return list(self.BOT_POS)
+                result = self.ai_slip_checking(copied_board,slimed_move,self.bot_position,0)
+                print("After Slimed")
+                print(result)
+                value = self.check_situation(copied_board,result)
+                if value > best_value:
+                    best_value = value
+                    best_move[0] = slimed_move[0]
+                    best_move[1] = slimed_move[1]
+            return list(best_move),True
 
         if len(zero_blocks) != 0:
             
@@ -495,11 +509,10 @@ class MyGame(arcade.View):
 
         print(best_move,best_value)
         
-        return list(best_move)
+        return list(best_move),False
             
     def heuristic(self,board):
         wining_chances = 0
-        
         # Looking for visited by bot
         for x in range(len(board)):
             for y in range(len(board[x])):
@@ -508,7 +521,10 @@ class MyGame(arcade.View):
         # Thz currentPos on simulation board
         x,y = list(self.BOT_POS)
         # previous_bot Position
-        pre_x , pre_y = bot_places[-1]
+        pre_x = x 
+        pre_y = y
+        if len(bot_places) != 0:
+            pre_x , pre_y = bot_places[-1]
 
         # Look for central area of bot
         # if x in range(3,8) and y in range(3,8):
@@ -533,6 +549,7 @@ class MyGame(arcade.View):
                 for i in reversed(range(x)):
                     if board[i][y] == 0:
                         wining_chances += 1
+        
         return wining_chances
 
     def minimax(self,board,depth,max_depth,is_max):
@@ -552,7 +569,7 @@ class MyGame(arcade.View):
                 return -100
             elif len(zero_moves) == 0 and len(slimed_moves) != 0:
                 # Slimed Moves
-                return 5
+                return 0
             elif len(zero_moves) != 0:
                 # Zeros left
                 for move in zero_moves:
@@ -602,11 +619,13 @@ class MyGame(arcade.View):
     
     def bot_playing(self):
         self.BOT_POS = copy.deepcopy(self.bot_position)
-        move = list(self.findBestMove())
+        print(self.bot_position)
+        move,is_slimed = list(self.findBestMove())
         if move == self.bot_position:
             print("Blocked, No score awarded")
             self.turn = 1
-        else:
+        elif is_slimed == False:
+            print("Bot Movement")
             print(move)
             self.bot_score += 1
             self.grid[move[0]][move[1]] = 2
@@ -622,9 +641,211 @@ class MyGame(arcade.View):
             self.splash_player_list.draw()
             self.splash_player_list.update()
             self.turn = 1
-            
 
+        elif is_slimed:
+            row,col = self.spliry_surface(move,self.bot_position,0)
+            self.grid[move[0]][move[1]] = 2
+            self.grid[self.bot_position[0]][self.bot_position[1]] = 20
+            pre_x = self.bot_position[0]
+            pre_y = self.bot_position[1]
+            self.bot_position[0] = row
+            self.bot_position[1] = col
+            splash = self.create_splashes(pre_x,pre_y,"splashRed.png")
+            self.splash_bot_list.append(splash)
+            self.splash_bot_list.draw()
+            self.splash_bot_list.update()
+            self.snail_two.center_x = (MARGIN + WIDTH) * (col) + MARGIN + WIDTH // 2
+            self.snail_two.center_y = (MARGIN + HEIGHT) * (row) + MARGIN + HEIGHT // 2 
+            self.snail_two.update()
+            self.turn = 1
+    def ai_slip_checking(self,board,location,current,turn):
+        if turn == 1:
+            player = 10
+            oppo = 20
+        elif turn == 0:
+            player = 20
+            oppo = 10
+        row , col = location
+        if row == 0 and col == 0:
+            return [row,col]
+        elif row == 0 and col == 9:
+            return [row,col]
+        elif row == 9 and col == 0:
+            return [row,col]
+        elif row == 9 and col == 9:
+            return [row,col]  
         
+        # elif (row > 0 and row < 9) and (col > 0 and col < 9):
+        else:
+            """
+            -------------------------------------------
+            Horizontal
+            """
+            # Check for horizontal move
+            if col - current[1] > 0 :
+                new_col = col
+                new_row = row
+                # It means horizontal increasing row same
+                for x in range(col+1 , 9+1):
+                    if board[row][x] == player:
+                        new_col = x
+                    elif board[row][x] == 0:
+                        break 
+                # It should return [row, new_col]
+
+            elif col - current[1] < 0 :
+                # it means horizontal decreasing row same
+                new_col = col
+                new_row = row
+                for i in reversed(range(col)):
+                    if board[row][i] == player:
+                        new_col = i
+                    elif board[row][i] == 0:
+                        break 
+            # Vertical movement
+            elif col - current[1] == 0:
+                # Vertical Movement confirm
+                new_row = row
+                new_col = col
+                # Increasing row direction
+                if row - current[0] > 0:
+                    for x in range(row+1 , 10):
+                        if board[x][col]  == player:
+                            new_row = x
+                        elif board[x][col]  == 0:
+                            break
+                # Decreasing row
+                elif row - current[0] < 0:
+                    for x in reversed(range(row)):
+                        if board[x][col]  == player:
+                            new_row = x
+                        elif board[x][col]  == 0:
+                            break
+            return [new_row,new_col]
+
+    # This function will be used by may be heuristic
+    def check_situation(self,board,postion):
+        x,y = postion
+        chances = 0
+        # If Row is zero
+        if x == 0:
+            if y == 0:
+                if board[x][y+1] == 0 or board[x+1][y] == 0:
+                    for row in range(x+1,5):
+                        for col in range(y+1,5):
+                            if board[row][col] == 0:
+                                chances += 1
+            elif y == 9:
+                if board[x][y-1] == 0 or board[x+1][y] == 0:
+                    for row in range(x+1,5):
+                        for col in reversed(range(5,y)):
+                            if board[row][col] == 0:
+                                chances += 1
+            # Check in surrounding mini board number of empty boxes
+            else:
+                if board[x][y+1] == 0 or board[x+1][y] == 0 or board[x][y-1] == 0 :
+                    for row in range(x,5):
+                        for col in range(y,y+3):
+                            if col > 9 :
+                                break
+                            if board[row][col] == 0:
+                                chances += 1
+                    for row in range(x,5):
+                        for col in range(y,y-3,-1):
+                            if col < 0  :
+                                break
+                            if board[row][col] == 0:
+                                chances += 1
+        # if row is 9
+        elif x == 9:
+            if y == 0:
+                if board[x][y+1] == 0 or board[x-1][y] == 0:
+                    for row in range(x,x-5,-1):
+                        for col in range(y,5):
+                            if board[row][col] == 0:
+                                chances += 1
+            elif y == 9:
+                if board[x][y-1] == 0 or board[x-1][y] == 0:
+                    for row in range(x,x-5,-1):
+                        for col in range(y,y-5,-1):
+                            if board[row][col] == 0:
+                                chances += 1
+            # Check in surrounding mini board number of empty boxes
+            else:
+                if board[x][y+1] == 0 or board[x-1][y] == 0 or board[x][y-1] == 0 :
+                    for row in range(x,x-4,-1):
+                        for col in range(y,y+3):
+                            if col > 9 :
+                                break
+                            if board[row][col] == 0:
+                                chances += 1
+                    for row in range(x,x-4,-1):
+                        for col in range(y,y-3,-1):
+                            if col < 0  :
+                                break
+                            if board[row][col] == 0:
+                                chances += 1
+        
+        elif y == 0 and (x > 0 or x < 9):
+            if board[x][y+1] == 0 or board[x+1][y] == 0 or board[x-1][y] == 0:
+                for row in range(x,x-4,-1):
+                    for col in range(y,5):
+                        if row < 0 :
+                            break
+                        if board[row][col] == 0:
+                            chances += 1
+                for row in range(x,x+4):
+                    for col in range(y,5):
+                        if row > 9 :
+                            break
+                        if board[row][col] == 0:
+                            chances += 1
+
+        elif  y == 9 and (x > 0 or x < 9):
+            if board[x][y-1] == 0 or board[x+1][y] == 0 or board[x-1][y] == 0:
+                print("Hello")
+                for row in range(x,x-4,-1):
+                    for col in reversed(range(5,y)):
+                        if row < 0 :
+                            break
+                        if board[row][col] == 0:
+                            chances += 1
+                for row in range(x,x+4):
+                    for col in reversed(range(5,y)):
+                        if row > 9 :
+                            break
+                        if board[row][col] == 0:
+                            chances += 1
+        # in between
+        else:
+            print("Else")
+            if board[x][y+1] == 0 or board[x][y-1] == 0 or board[x+1][y] == 0 or board[x-1][y+1] == 0:
+                for row in range(x,x+4):
+                    for col in range(y,y+4):
+                        if row > 9 or col > 9 :
+                            break
+                        if board[row][col] == 0:
+                            chances += 1
+                for row in range(x,x+4):
+                    for col in range(y,y-4,-1):
+                        if row > 9 or col < 0 :
+                            break
+                        if board[row][col] == 0:
+                            chances += 1
+
+                for row in range(x,x-4,-1):
+                    for col in range(y,y+4):
+                        if row < 0 or col > 9 :
+                            break
+                        if board[row][col] == 0:
+                            chances += 1
+                for row in range(x,x-4,-1):
+                    for col in range(y,y-4,-1):
+                        if row < 0 or col < 0 :
+                            break
+                        if board[row][col] == 0:
+                            chances += 1    
+        return chances        
     # ===================================================================================
     #                       Functions for AI AGENT (SECTION ENDED)
     # ===================================================================================
@@ -664,7 +885,7 @@ class MyGame(arcade.View):
                 current_y = self.snail_one.center_x // (MARGIN + WIDTH)
                 current_x = self.snail_one.center_y // (MARGIN + HEIGHT)
                 
-                result,new_x,new_y = self.islegalMove(self.turn,tuple((current_x,current_y)),tuple((row,column)))
+                result,new_x,new_y = self.islegalMove(1,tuple((current_x,current_y)),tuple((row,column)))
                 # If move is legal
                 if result:
                     self.grid[new_x][new_y] = 1
@@ -673,6 +894,7 @@ class MyGame(arcade.View):
                     self.PLAYER_POS = copy.deepcopy(self.player_position)
                     print("New x y")
                     print(self.player_position)
+                    print(self.PLAYER_POS)
                     self.player_score += 1
                     self.snail_one.center_x = (MARGIN + WIDTH) * (new_y) + MARGIN + WIDTH // 2
                     self.snail_one.center_y = (MARGIN + HEIGHT) * (new_x) + MARGIN + HEIGHT // 2 
@@ -687,6 +909,7 @@ class MyGame(arcade.View):
                 else:
                     print("No score awarded")
                     self.turn = 0 #bot turn given
+                print("Bot Turn")
                 self.bot_playing()
             # elif self.turn == 0:
             #     # Checking for the legal move
