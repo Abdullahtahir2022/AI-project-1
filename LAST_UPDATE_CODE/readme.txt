@@ -6,8 +6,7 @@ Group Members :
 
  Hello,
 
-        new.py file is our main file..
-        Kindly ignore main_file.py ... 
+        final_game.py
 ================================================
 
 Main functions :
